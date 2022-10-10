@@ -149,6 +149,7 @@ class BatchJob(object):
         max_swap,
         swappiness,
         host_volumes,
+        efs_volumes,
         num_parallel,
     ):
         # identify platform from any compute environment associated with the
@@ -247,19 +248,34 @@ class BatchJob(object):
                         "maxSwap"
                     ] = int(max_swap)
 
-        if host_volumes:
+        if host_volumes or efs_volumes:
             job_definition["containerProperties"]["volumes"] = []
             job_definition["containerProperties"]["mountPoints"] = []
-            if isinstance(host_volumes, str):
-                host_volumes = [host_volumes]
-            for host_path in host_volumes:
-                name = host_path.replace("/", "_").replace(".", "_")
-                job_definition["containerProperties"]["volumes"].append(
-                    {"name": name, "host": {"sourcePath": host_path}}
-                )
-                job_definition["containerProperties"]["mountPoints"].append(
-                    {"sourceVolume": name, "containerPath": host_path}
-                )
+            if host_volumes:
+                if isinstance(host_volumes, str):
+                    host_volumes = [host_volumes]
+                for host_path in host_volumes:
+                    name = host_path.replace("/", "_").replace(".", "_")
+                    job_definition["containerProperties"]["volumes"].append(
+                        {"name": name, "host": {"sourcePath": host_path}}
+                    )
+                    job_definition["containerProperties"]["mountPoints"].append(
+                        {"sourceVolume": name, "containerPath": host_path}
+                    )
+            if efs_volumes:
+                if isinstance(efs_volumes, str):
+                    efs_volumes = [efs_volumes]
+                for efs_vol_cfg in efs_volumes:
+                    efs_id, host_path = efs_vol_cfg.split("@")
+
+                    name = host_path.replace("/", "_").replace(".", "_")
+                    job_definition["containerProperties"]["volumes"].append(
+                        {"name": name, "host": {"sourcePath": host_path}, "efsVolumeConfiguration": {"fileSystemId": efs_id}}
+                    )
+                    job_definition["containerProperties"]["mountPoints"].append(
+                        {"sourceVolume": name, "containerPath": host_path}
+                    )
+
 
         self.num_parallel = num_parallel or 0
         if self.num_parallel >= 1:
@@ -322,6 +338,7 @@ class BatchJob(object):
         max_swap,
         swappiness,
         host_volumes,
+        efs_volumes,
         num_parallel,
     ):
         self.payload["jobDefinition"] = self._register_job_definition(
@@ -333,6 +350,7 @@ class BatchJob(object):
             max_swap,
             swappiness,
             host_volumes,
+            efs_volumes,
             num_parallel,
         )
         return self

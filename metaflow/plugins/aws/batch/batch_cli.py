@@ -143,6 +143,7 @@ def kill(ctx, run_id, user, my_runs):
 # TODO: Maybe remove it altogether since it's not used here
 @click.option("--ubf-context", default=None, type=click.Choice([None, "ubf_control"]))
 @click.option("--host-volumes", multiple=True)
+@click.option("--efs-volumes", multiple=True)
 @click.option(
     "--num-parallel",
     default=0,
@@ -168,6 +169,7 @@ def step(
     max_swap=None,
     swappiness=None,
     host_volumes=None,
+    efs_volumes=None,
     num_parallel=None,
     **kwargs
 ):
@@ -293,6 +295,7 @@ def step(
                 env=env,
                 attrs=attrs,
                 host_volumes=host_volumes,
+                efs_volumes=efs_volumes,
                 num_parallel=num_parallel,
             )
     except Exception as e:

@@ -1,0 +1,5 @@
+FROM public.ecr.aws/i7d4o1h8/miniconda3:4.10.3p0
+
+RUN apt-get update && apt-get install -y fuse
+RUN wget -P /usr/bin https://github.com/kahing/goofys/releases/download/v0.24.0/goofys && chmod +x /usr/bin/goofys
+RUN conda install conda-build

@@ -26,4 +26,6 @@ setup(
         "boto3",
         "pylint",
     ],
+    url="https://github.com/building-estimates/metaflow",
+    python_requires='>=3.6',
 )
