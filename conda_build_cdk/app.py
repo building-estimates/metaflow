@@ -18,9 +18,9 @@ RESOURCE_NAMES = {
 app = App()
 CondaBuildCdkStack(
     app,
-    RESOURCE_NAMES["project_name"] + "Stack",
+    RESOURCE_NAMES["project_name"] + "CondaStack",
     RESOURCE_NAMES,
-    stack_name=RESOURCE_NAMES["project_name"] + "Stack",
+    stack_name=RESOURCE_NAMES["project_name"] + "CondaStack",
     env={
         "account": '785965938585',
         "region": 'ap-southeast-2',
