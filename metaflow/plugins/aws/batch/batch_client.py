@@ -270,7 +270,7 @@ class BatchJob(object):
 
                     name = host_path.replace("/", "_").replace(".", "_")
                     job_definition["containerProperties"]["volumes"].append(
-                        {"name": name, "host": {"sourcePath": host_path}, "efsVolumeConfiguration": {"fileSystemId": efs_id}}
+                        {"name": name, "efsVolumeConfiguration": {"fileSystemId": efs_id}}
                     )
                     job_definition["containerProperties"]["mountPoints"].append(
                         {"sourceVolume": name, "containerPath": host_path}
