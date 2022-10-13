@@ -120,6 +120,13 @@ def step_functions(obj, name=None):
     help="Log AWS Step Functions execution history to AWS CloudWatch "
     "Logs log group.",
 )
+@click.option(
+    "--with",
+    "decospecs",
+    multiple=True,
+    help="Add a decorator to all steps. You can specify this option "
+    "multiple times to attach multiple decorators in steps.",
+)
 @click.pass_obj
 def create(
     obj,
@@ -132,6 +139,7 @@ def create(
     max_workers=None,
     workflow_timeout=None,
     log_execution_history=False,
+    decospecs=None
 ):
     validate_tags(tags)
 
@@ -161,6 +169,7 @@ def create(
         max_workers,
         workflow_timeout,
         obj.is_project,
+        decospecs
     )
 
     if only_json:
@@ -269,10 +278,13 @@ def resolve_state_machine_name(obj, name):
 
 
 def make_flow(
-    obj, token, name, tags, namespace, max_workers, workflow_timeout, is_project
+    obj, token, name, tags, namespace, max_workers, workflow_timeout, is_project, decospecs
 ):
     if obj.flow_datastore.TYPE != "s3":
         raise MetaflowException("AWS Step Functions requires --datastore=s3.")
+
+    if decospecs:
+        decorators._attach_decorators(obj.flow, decospecs)
 
     # Attach AWS Batch decorator to the flow
     decorators._attach_decorators(obj.flow, [BatchDecorator.name])
