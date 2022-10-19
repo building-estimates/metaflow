@@ -264,7 +264,7 @@ class BatchJob(object):
                     )
             if efs_volumes:
                 if isinstance(efs_volumes, str):
-                    efs_volumes = [efs_volumes]
+                    efs_volumes = efs_volumes.split(",")
                 for efs_vol_cfg in efs_volumes:
                     efs_id, host_path = efs_vol_cfg.split("@")
 
@@ -275,7 +275,6 @@ class BatchJob(object):
                     job_definition["containerProperties"]["mountPoints"].append(
                         {"sourceVolume": name, "containerPath": host_path}
                     )
-
 
         self.num_parallel = num_parallel or 0
         if self.num_parallel >= 1:
