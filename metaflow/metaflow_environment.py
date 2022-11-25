@@ -129,23 +129,23 @@ class MetaflowEnvironment(object):
     def get_package_commands(self, code_package_url, datastore_type):
         cmds = [
             BASH_MFLOG,
-            "mflog 'Setting up task environment.'",
+            "mflog 'Set up environment.'",
             self._get_install_dependencies_cmd(datastore_type),
             "mkdir metaflow",
             "cd metaflow",
             "mkdir .metaflow",  # mute local datastore creation log
             "i=0; while [ $i -le 5 ]; do "
-            "mflog 'Downloading code package...'; "
+            "mflog 'Download code...'; "
             + self._get_download_code_package_cmd(code_package_url, datastore_type)
-            + " && mflog 'Code package downloaded.' && break; "
+            + " && mflog 'Downloaded.' && break; "
             "sleep 10; i=$((i+1)); "
             "done",
             "if [ $i -gt 5 ]; then "
-            "mflog 'Failed to download code package from %s "
+            "mflog 'Failed to download from %s "
             "after 6 tries. Exiting...' && exit 1; "
             "fi" % code_package_url,
             "TAR_OPTIONS='--warning=no-timestamp' tar xf job.tar",
-            "mflog 'Task is starting.'",
+            "mflog 'Task starting.'",
         ]
         return cmds
 

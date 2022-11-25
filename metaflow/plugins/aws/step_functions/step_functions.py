@@ -586,9 +586,14 @@ class StepFunctions(object):
         metadata_env = self.metadata.get_runtime_environment("step-functions")
         env.update(metadata_env)
 
-        metaflow_version = self.environment.get_environment_info()
-        metaflow_version["flow_name"] = self.graph.name
-        metaflow_version["production_token"] = self.production_token
+        metaflow_version = {
+            key: value
+            for key, value in self.environment.get_environment_info().items()
+            if key in ["python_version_code", "metaflow_version"]
+        }
+        #metaflow_version["flow_name"] = self.graph.name
+        #metaflow_version["production_token"] = self.production_token
+
         env["METAFLOW_VERSION"] = json.dumps(metaflow_version)
 
         # Set AWS DynamoDb Table Name for state tracking for for-eaches.
