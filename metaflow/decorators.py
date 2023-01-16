@@ -257,6 +257,8 @@ class StepDecorator(Decorator):
 
     # `allow_multiple` allows setting many decorators of the same type to a step.
     allow_multiple = False
+    #Created allow_merge functionality for the batch operator
+    allow_merge = False
 
     def step_init(
         self, flow, graph, step_name, decorators, environment, flow_datastore, logger
@@ -454,7 +456,7 @@ def _base_step_decorator(decotype, *args, **kwargs):
         return wrap
 
 
-def _attach_decorators(flow, decospecs):
+def _attach_decorators(flow, decospecs,merge=True):
     """
     Attach decorators to all steps during runtime. This has the same
     effect as if you defined the decorators statically in the source for
@@ -467,10 +469,10 @@ def _attach_decorators(flow, decospecs):
     # Note that each step gets its own instance of the decorator class,
     # so decorator can maintain step-specific state.
     for step in flow:
-        _attach_decorators_to_step(step, decospecs)
+        _attach_decorators_to_step(step, decospecs,merge=merge)
+        
 
-
-def _attach_decorators_to_step(step, decospecs):
+def _attach_decorators_to_step(step, decospecs,merge=True):
     """
     Attach decorators to a step during runtime. This has the same
     effect as if you defined the decorators statically in the source for
@@ -498,6 +500,32 @@ def _attach_decorators_to_step(step, decospecs):
                 splits[1] if len(splits) > 1 else ""
             )
             step.decorators.append(deco)
+        
+        # Allow merge functionality - static operators added first and the step-cli
+        elif decos[deconame].allow_merge and merge:
+            deco_to_update = None
+
+            # Find static batch decorator
+            for i,_step in enumerate(step.decorators):
+                if _step.name == deconame:
+                    deco_to_update = _step
+                    deco_index = i
+
+            if deco_to_update is None:
+                continue
+            
+            static_attr = {}
+
+            for key in deco_to_update.do_not_overwrite:
+                static_attr[key] = deco_to_update.attributes[key]
+
+            # Send existing attributes (from static decorator) and remaining deco spec to be merged
+            updated_deco = deco_to_update._parse_decorator_spec(
+                splits[1] if len(splits) > 1 else "",static_attr
+            )
+            # Delete exisiting decorator and add updated one
+            del step.decorators[deco_index]
+            step.decorators.append(updated_deco)
 
 
 def _init_flow_decorators(
