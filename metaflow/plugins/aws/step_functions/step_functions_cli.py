@@ -286,8 +286,10 @@ def make_flow(
     if decospecs:
         decorators._attach_decorators(obj.flow, decospecs)
 
-    # Attach AWS Batch decorator to the flow
-    decorators._attach_decorators(obj.flow, [BatchDecorator.name])
+    if len(decospecs) == 0:
+        # Don't merge here, cause things with static decorators should not be needed to be passed again
+        decorators._attach_decorators(obj.flow, [BatchDecorator.name],merge=False)
+
     decorators._init_step_decorators(
         obj.flow, obj.graph, obj.environment, obj.flow_datastore, obj.logger
     )

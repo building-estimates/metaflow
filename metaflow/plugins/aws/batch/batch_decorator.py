@@ -3,6 +3,8 @@ import sys
 import platform
 import requests
 import time
+import re
+import json
 
 from metaflow import util
 from metaflow import R, current
@@ -95,8 +97,42 @@ class BatchDecorator(StepDecorator):
     package_url = None
     package_sha = None
     run_time_limit = None
+    allow_merge = True
+
+    # Overriding default class method for decorator
+    @classmethod
+    def _parse_decorator_spec(cls, deco_spec,attrs={}):
+        if len(deco_spec) == 0:
+            return cls()
+
+        # TODO: Do we really want to allow spaces in the names of attributes?!?
+        for a in re.split(""",(?=[\s\w]+=)""", deco_spec):
+            name, val = a.split("=")
+            try:
+                val_parsed = json.loads(val.strip().replace('\\"', '"'))
+            except json.JSONDecodeError:
+                # In this case, we try to convert to either an int or a float or
+                # leave as is. Prefer ints if possible.
+                try:
+                    val_parsed = int(val.strip())
+                except ValueError:
+                    try:
+                        val_parsed = float(val.strip())
+                    except ValueError:
+                        val_parsed = val.strip()
+            # Only if attr doesn't exist in existing attrs list add it
+            if not (name.strip() in attrs):
+                attrs[name.strip()] = val_parsed
+
+        return cls(attributes=attrs)
 
     def __init__(self, attributes=None, statically_defined=False):
+        # Create list of attributes to not overwrite - i.e. explicitly declared in static decorator
+        self.do_not_overwrite = []
+        if statically_defined and attributes is not None:
+            for key,value in attributes.items():
+                self.do_not_overwrite.append(key)
+        # Above needs to be done before this super init, as the super init adds the default arguments - which we may want to overwrite
         super(BatchDecorator, self).__init__(attributes, statically_defined)
 
         # If no docker image is explicitly specified, impute a default image.
