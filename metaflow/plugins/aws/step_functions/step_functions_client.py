@@ -23,7 +23,7 @@ class StepFunctionsClient(object):
             None,
         )
 
-    def push(self, name, definition, role_arn, log_execution_history):
+    def push(self, name, definition, role_arn, log_execution_history, alias):
         try:
             response = self._client.create_state_machine(
                 name=name,
@@ -32,19 +32,37 @@ class StepFunctionsClient(object):
                 loggingConfiguration=self._default_logging_configuration(
                     log_execution_history
                 ),
+                publish=(alias is not None) # Need to version to have alias
             )
             state_machine_arn = response["stateMachineArn"]
         except self._client.exceptions.StateMachineAlreadyExists as e:
             # State Machine already exists, update it instead of creating it.
             state_machine_arn = e.response["Error"]["Message"].split("'")[1]
-            self._client.update_state_machine(
+            response = self._client.update_state_machine(
                 stateMachineArn=state_machine_arn,
                 definition=definition,
                 roleArn=role_arn,
                 loggingConfiguration=self._default_logging_configuration(
                     log_execution_history
                 ),
+                publish=(alias is not None) # Need to version to have alias 
             )
+            
+
+        # Create alias if required 
+        if alias is not None:
+            state_machine_version_arn = response["stateMachineVersionArn"]
+            self._client.create_state_machine_alias(
+                description=f'State machine version {alias}',
+                name=alias,
+                routingConfiguration=[
+                    {
+                        'stateMachineVersionArn': state_machine_version_arn,
+                        'weight': 100
+                    }
+                ]
+            )
+
         return state_machine_arn
 
     def get(self, name):

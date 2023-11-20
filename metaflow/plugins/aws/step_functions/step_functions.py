@@ -19,6 +19,7 @@ from metaflow.metaflow_config import (
     SFN_DYNAMO_DB_TABLE,
     SFN_EXECUTION_LOG_GROUP_ARN,
     S3_ENDPOINT_URL,
+    SFN_ALIAS
 )
 from metaflow import R
 
@@ -125,6 +126,7 @@ class StepFunctions(object):
                 definition=self.to_json(),
                 role_arn=SFN_IAM_ROLE,
                 log_execution_history=log_execution_history,
+                alias=SFN_ALIAS
             )
         except Exception as e:
             raise StepFunctionsException(repr(e))

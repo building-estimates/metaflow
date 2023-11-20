@@ -282,6 +282,7 @@ SFN_STATE_MACHINE_PREFIX = from_conf("METAFLOW_SFN_STATE_MACHINE_PREFIX")
 # machine execution logs. This needs to be available when using the
 # `step-functions create --log-execution-history` command.
 SFN_EXECUTION_LOG_GROUP_ARN = from_conf("METAFLOW_SFN_EXECUTION_LOG_GROUP_ARN")
+SFN_ALIAS = from_conf("METAFLOW_SFN_ALIAS")
 
 ###
 # Kubernetes configuration
