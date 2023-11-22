@@ -159,7 +159,7 @@ class StepFunctions(object):
             raise StepFunctionsSchedulingException(repr(e))
 
     @classmethod
-    def trigger(cls, name, parameters):
+    def trigger(cls, name, parameters, alias=None):
         try:
             state_machine = StepFunctionsClient().get(name)
         except Exception as e:
@@ -184,6 +184,8 @@ class StepFunctions(object):
             )
         try:
             state_machine_arn = state_machine.get("stateMachineArn")
+            if alias is not None:
+                state_machine_arn = f"{state_machine_arn}:{alias}"
             return StepFunctionsClient().trigger(state_machine_arn, input)
         except Exception as e:
             raise StepFunctionsException(repr(e))
