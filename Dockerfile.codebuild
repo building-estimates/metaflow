@@ -1,5 +1,6 @@
-FROM public.ecr.aws/k5q1y0q6/miniconda3:4.12.0
+FROM public.ecr.aws/k5q1y0q6/miniconda3:22.11.1
 
 RUN apt-get update && apt-get install -y fuse unzip npm
 RUN wget -P /usr/bin https://github.com/kahing/goofys/releases/download/v0.24.0/goofys && chmod +x /usr/bin/goofys
-RUN conda install -c defaults -c conda-forge python=3.8.3 conda-build awscli
+RUN conda install -c defaults -c conda-forge python=3.8.3 conda-build awscli conda-libmamba-solver
+RUN conda config --set solver libmamba
